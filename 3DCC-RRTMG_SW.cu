@@ -2213,10 +2213,10 @@ __global__ void spcvmc_sw1(int istart,int iend,double *pbbcd,double *pbbcu,
     double zdbtmc,zdbtmo,zf,zgw;
     double zwf,tauorig,repclc;
 
-	iplon=blockIdx.x * blockDim.x + threadIdx.x + offset;
+	iplon=blockIdx.x * blockDim.x + threadIdx.x;
     jb=blockIdx.y * blockDim.y + threadIdx.y;
 	
-    if(iplon>=0 && iplon<ncol&&jb>=15&&jb<29)
+    if(iplon>=offset && iplon<offset + ncol/4&&jb>=15&&jb<29)
 	{
 		klev = nlayers;
         iw = -1;
@@ -2429,7 +2429,7 @@ __global__ void spcvmc_sw2(int istart,int iend,double *pbbcd,double *pbbcu,
 	int ib1,ib2,ibm,igt,ikl,ikp,ikx,jb,jg,jl,jk,klev,iw;
 	int iplon,lay;
 	int itind,i,j,k;
-	iplon=blockIdx.x * blockDim.x + threadIdx.x + offset;
+	iplon=blockIdx.x * blockDim.x + threadIdx.x;
 	 double pbbfu_[(nlayers+1)];
 	 double pbbfd_[(nlayers+1)];
 	 double pbbcu_[(nlayers+1)];
@@ -2437,7 +2437,7 @@ __global__ void spcvmc_sw2(int istart,int iend,double *pbbcd,double *pbbcu,
 	 double pbbfddir_[(nlayers+1)];
 	 double pbbcddir_[(nlayers+1)];
 
-    if(iplon>=0 && iplon<ncol)
+    if(iplon>=offset && iplon<offset + ncol/4)
 	{
 		klev = nlayers;
         iw = -1;
@@ -3585,9 +3585,9 @@ int main(void)
 	starts=clock();
 
 	inflgsw=0;
-    iceflgsw=0;
-    liqflgsw=0;
-    icld=2;
+        iceflgsw=0;
+        liqflgsw=0;
+        icld=2;
 
 	//ngs_c={6,18,26,34,44,54,56,66,74,80,86,94,100,112};
 	ngs_c[0]=6;
@@ -4407,35 +4407,35 @@ int main(void)
 		cudaEventCreate(&nstop1);
 		cudaEventRecord(nstart1);	
         inatm_d1<<<grid1,tBlock1>>>(wkl,
-									reicmc,dgesmc,
-									relqmc,taua,ssaa,asma);
+				    reicmc,dgesmc,
+				    relqmc,taua,ssaa,asma);
 						
         inatm_d2<<<grid1,tBlock1>>>(play_d,plev_d,tlay_d,tlev_d,
-									h2ovmr_d,o3vmr_d,co2vmr_d,ch4vmr_d,
-									o2vmr_d,n2ovmr_d,
-									pavel,pz,pdp,
-									tavel,tz,wkl);					
+				    h2ovmr_d,o3vmr_d,co2vmr_d,ch4vmr_d,
+				    o2vmr_d,n2ovmr_d,
+				    pavel,pz,pdp,
+				    tavel,tz,wkl);					
         inatm_d3<<<grid2,tBlock2>>>(icld,cldfmcl_d,taucmcl_d,
-									ssacmcl_d,asmcmcl_d,fsfcmcl_d,ciwpmcl_d,
-									clwpmcl_d,reicmcl_d,relqmcl_d,tauaer_d,
-									cldfmc,taucmc,ssacmc,asmcmc,
-									fsfcmc,ciwpmc,clwpmc);
+				    ssacmcl_d,asmcmcl_d,fsfcmcl_d,ciwpmcl_d,
+				    clwpmcl_d,reicmcl_d,relqmcl_d,tauaer_d,
+				    cldfmc,taucmc,ssacmc,asmcmc,
+				    fsfcmc,ciwpmc,clwpmc);
 				
 		 inatm_d4<<<grid1,tBlock1>>>(icld,iaer,inflgsw,iceflgsw,liqflgsw,
-									reicmcl_d,relqmcl_d,tauaer_d,
-									ssaaer_d,asmaer_d,
-									reicmc,dgesmc,
-									relqmc,taua,ssaa,asma);
+					     reicmcl_d,relqmcl_d,tauaer_d,
+					     ssaaer_d,asmaer_d,
+					     reicmc,dgesmc,
+					     relqmc,taua,ssaa,asma);
 
         inatm_d5<<<ceil(ncol*1.0/(tpb*4)),(tpb*4)>>>(avogad,grav,
-													adjes,dyofyr,
-													tsfc_d,
-													solvar_d,
-													pavel,pz,pdp,
-													tavel,tz,tbound,adjflux,wkl,
-													coldry,cldfmc,taucmc,ssacmc,asmcmc,
-													fsfcmc,ciwpmc,clwpmc,reicmc,dgesmc,
-													relqmc,taua,ssaa,asma);
+						     adjes,dyofyr,
+						     tsfc_d,
+						     solvar_d,
+						     pavel,pz,pdp,
+						     tavel,tz,tbound,adjflux,wkl,
+						     coldry,cldfmc,taucmc,ssacmc,asmcmc,
+						     fsfcmc,ciwpmc,clwpmc,reicmc,dgesmc,
+						     relqmc,taua,ssaa,asma);
 					
 		cudaEventRecord(nstop1);
 		
@@ -4449,13 +4449,13 @@ int main(void)
 		cudaEventCreate(&nstop2);
 		cudaEventRecord(nstart2);	
 		cldprmc_d<<<grid3,tBlock3>>>(taormc,taucmc,ciwpmc,
-									clwpmc,cldfmc,fsfcmc,ssacmc,asmcmc,
-									reicmc,wavenum2,abari,bbari,
-									cbari,dbari,ebari,fbari,
-									ngb,extice2,ssaice2,asyice2,
-									dgesmc,extice3,ssaice3,asyice3,
-									fdlice3,relqmc,extliq1,ssaliq1,
-									asyliq1);
+					     clwpmc,cldfmc,fsfcmc,ssacmc,asmcmc,
+					     reicmc,wavenum2,abari,bbari,
+					     cbari,dbari,ebari,fbari,
+					     ngb,extice2,ssaice2,asyice2,
+					     dgesmc,extice3,ssaice3,asyice3,
+					     fdlice3,relqmc,extliq1,ssaliq1,
+					     asyliq1);
 					
 		cudaEventRecord(nstop2);
 		
@@ -4616,17 +4616,35 @@ int main(void)
 		for( i=0;i<4;++i){
 			cudaStreamDestroy(stream5[i]);
 		}
+
 			g = g + 1;
 		printf("step=%d\n",g);
 		
 	}
-		// std::cout << "inatm消耗时间： " <<inatmtime<< std::endl;
-		// std::cout << "cldprmc消耗时间： " <<cldprmctime<< std::endl;
-		// std::cout << "setcoef消耗时间： " <<setcoeftime<< std::endl;
-		// std::cout << "taumol消耗时间： " <<taumoltime<< std::endl;
-		// std::cout << "spcvmc消耗时间： " <<spcvmctime<< std::endl;
-		// std::cout << "Host to Device消耗时间： " <<chuanshutime<< std::endl;
-		// std::cout << "Device to Host消耗时间： " <<chuanshutime2<< std::endl;
+
+	printf("zbbfddir=%E   %E\n",zbbfddir[29*ncol+191],zbbfddir[20*ncol+453]);
+	printf("znifddir=%E   %E\n",znifddir[47*ncol+258],znifddir[31*ncol+478]);
+	printf("znicddir=%E   %E\n",znicddir[32*ncol+369],znicddir[48*ncol+652]);
+	printf("zuvfddir=%E   %E\n",zuvfddir[48*ncol+751],zuvfddir[4*ncol+365]);
+	printf("zuvcddir=%E   %E\n",zuvcddir[42*ncol+388],zuvcddir[39*ncol+752]);
+	printf("zbbcddir=%E   %E\n",zbbcddir[21*ncol+1011],zbbcddir[18*ncol+999]);
+	printf("zbbfd=%E   %E\n",zbbfd[37*ncol+344],zbbfd[35*ncol+99]);
+	printf("zbbfu=%E   %E\n",zbbfu[50*ncol+54],zbbfu[47*ncol+99]);
+	printf("zbbcd=%E   %E\n",zbbcd[11*ncol+125],zbbcd[23*ncol+100]);
+	printf("zbbcu=%E   %E\n",zbbcu[41*ncol+964],zbbcu[30*ncol+299]);
+	printf("zuvfd=%E   %E\n",zuvfd[14*ncol+475],zuvfd[35*ncol+189]);
+	printf("zuvcd=%E   %E\n",zuvcd[9*ncol+142],zuvcd[38*ncol+77]);
+	printf("znifd=%E   %E\n",znifd[16*ncol+136],znifd[39*ncol+100]);
+	printf("znicd=%E   %E\n",znicd[4*ncol+55],znicd[47*ncol+1000]);
+	printf("znifu=%E   %E\n",znifu[46*ncol+9],znifu[48*ncol+699]);
+	printf("znicu=%E   %E\n",znicu[1*ncol+0],znicu[23*ncol+179]);
+		std::cout << "inatmtime: " <<inatmtime<< std::endl;
+		std::cout << "cldprmctime: " <<cldprmctime<< std::endl;
+		std::cout << "setcoeftime: " <<setcoeftime<< std::endl;
+		std::cout << "taumoltime: " <<taumoltime<< std::endl;
+		std::cout << "spcvmctime: " <<spcvmctime<< std::endl;
+		std::cout << "Host to Device time: " <<chuanshutime<< std::endl;
+		std::cout << "Device to Host time: " <<chuanshutime2<< std::endl;
 
 		cudaFree(play_d);
 		cudaFree(plev_d);
@@ -5118,5 +5136,4 @@ int main(void)
 		cudaFreeHost(nspa_c);
 		cudaFreeHost(nspb_c);
 }
-
 
