@@ -4638,14 +4638,12 @@ int main(void)
 	printf("znicd=%E   %E\n",znicd[4*ncol+55],znicd[47*ncol+1000]);
 	printf("znifu=%E   %E\n",znifu[46*ncol+9],znifu[48*ncol+699]);
 	printf("znicu=%E   %E\n",znicu[1*ncol+0],znicu[23*ncol+179]);
-	printf("\n\n");
+	printf("\n");
 		std::cout << "inatm time: " <<inatmtime<< std::endl;
 		std::cout << "cldprmc time: " <<cldprmctime<< std::endl;
 		std::cout << "setcoef time: " <<setcoeftime<< std::endl;
 		std::cout << "taumol time: " <<taumoltime<< std::endl;
 		std::cout << "spcvmc time: " <<spcvmctime<< std::endl;
-		std::cout << "Host to Device time: " <<chuanshutime<< std::endl;
-		std::cout << "Device to Host time: " <<chuanshutime2<< std::endl;
 
 		cudaFree(play_d);
 		cudaFree(plev_d);
